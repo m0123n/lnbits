@@ -51,16 +51,16 @@ async def api_wallet_retrieve(wallet_id):
 @api_check_wallet_key("invoice")
 @api_validate_post_request(
     schema={
-        "ex_key": {"type": "string", "empty": False, "required": True},
-        "description": {"type": "string", "empty": False, "required": True},
-        "amount": {"type": "integer", "min": 1, "required": True},
+        "masterpub": {"type": "string", "empty": False, "required": True},
+        "title": {"type": "string", "empty": False, "required": True},
     }
 )
 async def api_wallet_create_or_update(wallet_id=None):
-
+    print("g.data")
     if not wallet_id:
-        wallet = create_watch_wallet(g.wallet.user, g.data.ex_key, g.data.description, g.data.amount)
-        return jsonify(get_watch_wallet(wallet)), HTTPStatus.CREATED
+        wallet = create_watch_wallet(user=g.wallet.user, masterpub=g.data["masterpub"], title=g.data["title"])
+        print(wallet)
+        return jsonify(wallet), HTTPStatus.CREATED
 
     else:
         wallet = update_watch_wallet(wallet_id, g.data) 

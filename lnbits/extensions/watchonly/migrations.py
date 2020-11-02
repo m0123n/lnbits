@@ -5,11 +5,12 @@ def m001_initial(db):
     db.execute(
         """
         CREATE TABLE IF NOT EXISTS wallets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT NOT NULL PRIMARY KEY,
             user TEXT,
-            ex_key TEXT NOT NULL,
-            description TEXT NOT NULL,
-            pub_key_no INTEGER NOT NULL
+            masterpub TEXT NOT NULL,
+            title TEXT NOT NULL,
+            amount INTEGER NOT NULL,
+            pub_key_no INTEGER NOT NULL DEFAULT 0
         );
     """
     )
@@ -17,10 +18,10 @@ def m001_initial(db):
     db.execute(
         """
         CREATE TABLE IF NOT EXISTS payments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT NOT NULL PRIMARY KEY,
             user TEXT,
-            ex_key TEXT NOT NULL,
-            pub_key TEXT NOT NULL,
+            masterpub TEXT NOT NULL,
+            pubkey TEXT NOT NULL,
             time_to_pay INTEGER NOT NULL,
             amount INTEGER NOT NULL,
             time TIMESTAMP NOT NULL DEFAULT (strftime('%s', 'now'))
