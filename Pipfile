@@ -22,7 +22,7 @@ typing-extensions = "*"
 httpx = "*"
 quart-trio = "*"
 trio = "*"
-hypercorn = {extras = ["trio"], version = "*"}
+embit = "*"
 
 [dev-packages]
 black = "==20.8b1"
@@ -30,3 +30,7 @@ pytest = "*"
 pytest-cov = "*"
 mypy = "==0.761"
 pytest-trio = "*"
+
+[packages.hypercorn]
+extras = [ "trio",]
+version = "*"

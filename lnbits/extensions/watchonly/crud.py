@@ -5,7 +5,7 @@ from lnbits.db import open_ext_db
 from .models import Wallets, Payments
 from lnbits.helpers import urlsafe_short_hash
 
-
+from embit import bip32
 from embit import ec
 from embit.networks import NETWORKS
 from embit import base58
@@ -18,7 +18,7 @@ from binascii import hexlify
 from embit import script
 from embit import ec
 from embit.networks import NETWORKS
-from binascii import unhexlify, hexlify
+from binascii import unhexlify, hexlify, a2b_base64, b2a_base64
 
 ####################Derive address#######################
 
@@ -26,7 +26,9 @@ def get_fresh_address(wallet_id: str):
     
     wallet = get_watch_wallet(wallet_id)
     key_num = wallet[4]
-    pub_key = wallet[2].strip().derive("m/0/%d" % key_num).key
+    k = bip32.HDKey.from_base58(str(wallet[2]))
+    child = k.derive([0, index])
+    pub_key = script.p2wpkh(child).address()
 
     update_watch_wallet(wallet_id = wallet_id, pub_key_no = key_num + 1)
 
