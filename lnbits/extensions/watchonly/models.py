@@ -7,9 +7,9 @@ class Wallets(NamedTuple):
     user: str
     masterpub: str
     title: str
-    amount: int
     pub_key_no: int
-
+    amount: int
+    
     @classmethod
     def from_row(cls, row: Row) -> "Wallets":
         return cls(**dict(row))

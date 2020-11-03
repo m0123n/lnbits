@@ -9,8 +9,8 @@ def m001_initial(db):
             user TEXT,
             masterpub TEXT NOT NULL,
             title TEXT NOT NULL,
-            amount INTEGER NOT NULL,
-            pub_key_no INTEGER NOT NULL DEFAULT 0
+            pub_key_no INTEGER NOT NULL DEFAULT 0,
+            amount INTEGER NOT NULL
         );
     """
     )
