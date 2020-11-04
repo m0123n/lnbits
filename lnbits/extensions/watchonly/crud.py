@@ -14,7 +14,7 @@ import io
 from embit.util import secp256k1
 from embit import hashes
 from binascii import hexlify
-
+from quart import jsonify
 from embit import script
 from embit import ec
 from embit.networks import NETWORKS
@@ -27,12 +27,12 @@ def get_fresh_address(wallet_id: str):
     wallet = get_watch_wallet(wallet_id)
     key_num = wallet[4]
     k = bip32.HDKey.from_base58(str(wallet[2]))
-    child = k.derive([0, index])
-    pub_key = script.p2wpkh(child).address()
+    child = k.derive([0, 2])
+    address = script.p2wpkh(child).address()
 
     update_watch_wallet(wallet_id = wallet_id, pub_key_no = key_num + 1)
 
-    return pub_key
+    return address
 
 
 ####################Watch-only Wallets####################

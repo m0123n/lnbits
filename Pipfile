@@ -8,19 +8,19 @@ python_version = "3.7"
 
 [packages]
 bitstring = "*"
-cerberus = "*"
+Cerberus = "*"
 ecdsa = "*"
 environs = "*"
 lnurl = "*"
-pyscss = "*"
+pyScss = "*"
 shortuuid = "*"
-quart = "*"
-quart-cors = "*"
+Quart = "*"
+Quart-CORS = "*"
 quart-compress = "*"
 secure = "*"
 typing-extensions = "*"
 httpx = "*"
-quart-trio = "*"
+Quart-Trio = "*"
 trio = "*"
 embit = "*"
 
@@ -31,6 +31,6 @@ pytest-cov = "*"
 mypy = "==0.761"
 pytest-trio = "*"
 
-[packages.hypercorn]
+[packages.Hypercorn]
 extras = [ "trio",]
 version = "*"
