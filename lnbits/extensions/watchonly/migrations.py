@@ -38,3 +38,11 @@ def m001_initial(db):
         );
     """
     )
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS mempool (
+            user TEXT NOT NULL,
+            endpoint TEXT NOT NULL 
+        );
+    """
+    )

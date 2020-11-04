@@ -1,7 +1,6 @@
 from sqlite3 import Row
 from typing import NamedTuple
 
-
 class Wallets(NamedTuple):
     id: str
     user: str
@@ -25,4 +24,21 @@ class Payments(NamedTuple):
 
     @classmethod
     def from_row(cls, row: Row) -> "Payments":
+        return cls(**dict(row))
+
+class Addresses(NamedTuple):
+    address: str
+    wallet: str
+    amount: int
+
+    @classmethod
+    def from_row(cls, row: Row) -> "Addresses":
+        return cls(**dict(row))
+
+class Mempool(NamedTuple):
+    user: str
+    endpoint: str
+    
+    @classmethod
+    def from_row(cls, row: Row) -> "Mempool":
         return cls(**dict(row))

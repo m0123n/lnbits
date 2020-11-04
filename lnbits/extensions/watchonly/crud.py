@@ -2,7 +2,7 @@ from typing import List, Optional, Union
 
 from lnbits.db import open_ext_db
 
-from .models import Wallets, Payments
+from .models import Wallets, Payments, Addresses, Mempool
 from lnbits.helpers import urlsafe_short_hash
 
 from embit import bip32
@@ -20,21 +20,46 @@ from embit import ec
 from embit.networks import NETWORKS
 from binascii import unhexlify, hexlify, a2b_base64, b2a_base64
 
-####################Derive address#######################
+########################ADDRESSES#######################
 
-def get_fresh_address(wallet_id: str):
+def get_fresh_address(wallet_id: str) -> Addresses:
     
     wallet = get_watch_wallet(wallet_id)
     key_num = wallet[4]
     k = bip32.HDKey.from_base58(str(wallet[2]))
-    child = k.derive([0, 2])
+    child = k.derive([0, key_num])
     address = script.p2wpkh(child).address()
 
     update_watch_wallet(wallet_id = wallet_id, pub_key_no = key_num + 1)
+    with open_ext_db("watchonly") as db:
+        db.execute(
+            """
+            INSERT INTO addresses (
+                address,
+                wallet,
+                amount
+            )
+            VALUES (?, ?, ?)
+            """,
+            (address, wallet_id, 0),
+        )
 
-    return address
+    return get_address(address)
 
-####################Watch-only Wallets####################
+
+def get_address(address: str) -> Addresses:
+    with open_ext_db("watchonly") as db:
+        row = db.fetchone("SELECT * FROM addresses WHERE address = ?", (address,))
+    return Addresses.from_row(row) if row else None
+
+
+def get_addresses(wallet_id: str) -> List[Addresses]:
+    with open_ext_db("watchonly") as db:
+        rows = db.fetchall("SELECT * FROM addresses WHERE wallet = ?", (wallet_id,))
+    return [Addresses(**row) for row in rows]
+
+
+##########################WALLETS####################
 
 def create_watch_wallet(*, user: str, masterpub: str, title: str) -> Wallets:
     wallet_id = urlsafe_short_hash()
@@ -123,3 +148,34 @@ def delete_payment(payment_id: str) -> None:
     with open_ext_db("watchonly") as db:
         db.execute("DELETE FROM payments WHERE id = ?", (payment_id,))
 
+
+######################MEMPOOL#######################
+
+def create_mempool(user: str) -> Mempool:
+    with open_ext_db("watchonly") as db:
+        db.execute(
+            """
+            INSERT INTO mempool (
+                user, 
+                endpoint
+            ) 
+            VALUES (?, ?)
+            """,
+            (user, 'https://mempool.space'),
+        )
+        row = db.fetchone("SELECT * FROM mempool WHERE user = ?", (user,))
+    return Mempool.from_row(row) if row else None
+
+def update_mempool(user: str, **kwargs) -> Optional[Mempool]:
+    q = ", ".join([f"{field[0]} = ?" for field in kwargs.items()])
+
+    with open_ext_db("watchonly") as db:
+        db.execute(f"UPDATE mempool SET {q} WHERE user = ?", (*kwargs.values(), user))
+        row = db.fetchone("SELECT * FROM mempool WHERE user = ?", (user,))
+    return Mempool.from_row(row) if row else None
+
+
+def get_mempool(user: str) -> Mempool:
+    with open_ext_db("watchonly") as db:
+        row = db.fetchone("SELECT * FROM mempool WHERE user = ?", (user,))
+    return Mempool.from_row(row) if row else None

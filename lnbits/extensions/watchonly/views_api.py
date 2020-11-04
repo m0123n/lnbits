@@ -16,6 +16,11 @@ from .crud import (
     get_payment,
     get_payments,
     delete_payment,
+    create_mempool,
+    update_mempool,
+    get_mempool,
+    get_addresses,
+    get_fresh_address
 )
 
 ###################WALLETS#############################
@@ -58,12 +63,14 @@ async def api_wallet_create_or_update(wallet_id=None):
     print("g.data")
     if not wallet_id:
         wallet = create_watch_wallet(user=g.wallet.user, masterpub=g.data["masterpub"], title=g.data["title"])
-        print(wallet)
+        mempool = get_mempool(g.wallet.user) 
+        if not mempool:
+            create_mempool(user=g.wallet.user)
         return jsonify(wallet._asdict()), HTTPStatus.CREATED
 
     else:
-        wallet = update_watch_wallet(wallet_id, g.data) 
-        return jsonify({wallet}), HTTPStatus.OK 
+        wallet = update_watch_wallet(wallet_id=wallet_id, **g.data) 
+        return jsonify(wallet._asdict()), HTTPStatus.OK 
 
 
 @watchonly_ext.route("/api/v1/wallet/<wallet_id>", methods=["DELETE"])
@@ -76,9 +83,31 @@ async def api_wallet_delete(wallet_id):
 
     delete_watch_wallet(wallet_id)
 
-    return "", HTTPStatus.NO_CONTENT
+    return jsonify({"deleted": "true"}), HTTPStatus.NO_CONTENT
 
 
+#############################ADDRESSES##########################
+
+@watchonly_ext.route("/api/v1/address/<wallet_id>", methods=["GET"])
+@api_check_wallet_key("invoice")
+async def api_fresh_address(wallet_id):
+    address = get_fresh_address(wallet_id) 
+        
+    if not address:
+        return jsonify({"message": "something went wrong"}), HTTPStatus.NOT_FOUND
+
+    return jsonify({address}), HTTPStatus.OK
+
+
+@watchonly_ext.route("/api/v1/addresses/<wallet_id>", methods=["GET"])
+@api_check_wallet_key("invoice")
+async def api_get_addresses(wallet_id):
+    addresses = get_addresses(wallet_id) 
+    print(addresses)
+    if not addresses:
+        return jsonify({"message": "wallet does not exist"}), HTTPStatus.NOT_FOUND
+
+    return jsonify([address._asdict() for address in addresses]), HTTPStatus.OK
 
 #############################PAYEMENTS##########################
 
@@ -142,3 +171,28 @@ async def api_payment_delete(payment_id):
 
     return "", HTTPStatus.NO_CONTENT
 
+#############################MEMPOOL##########################
+
+@watchonly_ext.route("/api/v1/mempool", methods=["PUT"])
+@api_check_wallet_key("invoice")
+@api_validate_post_request(
+    schema={
+        "endpoint": {"type": "string", "empty": False, "required": True},
+    }
+)
+async def api_update_mempool():
+    mempool = update_mempool(user=g.wallet.user, **g.data)
+    return jsonify(mempool._asdict()), HTTPStatus.OK 
+
+@watchonly_ext.route("/api/v1/mempool", methods=["GET"])
+@api_check_wallet_key("invoice")
+async def api_get_mempool():
+    print("poo")
+    print(g.wallet.user)
+    print("poo")
+    mempool = get_mempool(g.wallet.user) 
+    print(mempool)
+    if not mempool:
+        return jsonify({"message": "mempool does not exist"}), HTTPStatus.NOT_FOUND
+
+    return jsonify(mempool._asdict()), HTTPStatus.OK
