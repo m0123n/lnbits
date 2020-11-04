@@ -11,8 +11,11 @@
         <q-btn unelevated color="deep-purple" 
           >
         <div class="cursor-pointer" >
+                   <q-tooltip>
+           Point to another Mempool
+         </q-tooltip>
         {{ this.mempool.endpoint }}
-        <q-popup-edit v-model="mempool.endpoint" :cover="false"  :offset="[0, 10]">
+        <q-popup-edit v-model="mempool.endpoint">
           <q-input color="accent" v-model="mempool.endpoint">
           </q-input>
                  <center><q-btn
@@ -216,7 +219,19 @@
       {% raw %}
        <h5 class="text-subtitle1 q-my-none">Addresses</h5>
        <q-separator></q-separator><br/>
-       <p><strong>Current:</strong> {{ Addresses.data[0].address }}<br/></p>
+       <p><strong>Current:</strong> 
+        {{ Addresses.data[0].address }}
+                 <q-btn
+                  flat
+                  dense
+                  size="ms"
+                  icon="visibility"
+                  type="a"
+                  :href="mempool.endpoint + '/address/' + Addresses.data[0].address"
+                  target="_blank"
+                ></q-btn>
+                
+              </p>
       <q-responsive :ratio="1" class="q-mx-xl q-mb-md">
         <qrcode
           :value="Addresses.data[0].address"
@@ -225,8 +240,9 @@
         ></qrcode>
       </q-responsive>
       <p style="word-break: break-all;">
-        <strong>Current address:</strong> {{ Addresses }}<br />
-        <strong>Amount:</strong> poo sat<br />
+        <br /><br />
+        Table of addresses and amount will go here...
+        
       </p>
       {% endraw %}
       <div class="row q-mt-lg q-gutter-sm">
@@ -235,23 +251,8 @@
           color="grey"
           @click="copyText(Addresses.show, 'LNURL copied to clipboard!')"
           class="q-ml-sm"
-          >Copy LNURL</q-btn
+          >Get fresh address</q-btn
         >
-        <q-btn
-          outline
-          color="grey"
-          @click="copyText(Addresses.show, 'Link copied to clipboard!')"
-          >Shareable link</q-btn
-        >
-        <q-btn
-          v-if="!qrCodeDialog.data"
-          outline
-          color="grey"
-          icon="print"
-          type="a"
-          :href="Addresses.show"
-          target="_blank"
-        ></q-btn>
         <q-btn v-close-popup flat color="grey" class="q-ml-auto">Close</q-btn>
       </div>
     </q-card>
@@ -322,6 +323,25 @@
             rowsPerPage: 10
           }
         },
+        AddressTable: {
+          columns: [
+            {
+              name: 'address',
+              align: 'left',
+              label: 'Address',
+              field: 'address'
+            },
+            {
+              name: 'amount',
+              align: 'left',
+              label: 'Amount',
+              field: 'amount'
+            },
+          ],
+          pagination: {
+            rowsPerPage: 10
+          }
+        },
         formDialog: {
           show: false,
           secondMultiplier: 'seconds',
@@ -355,6 +375,9 @@
           .catch(function (error) {
             LNbits.utils.notifyApiError(error)
           })
+      },
+      addressRedirect: function (address){
+        window.location.href = this.mempool.endpoint + "/address/" + address;
       },
         getMempool: function () {
         var self = this
