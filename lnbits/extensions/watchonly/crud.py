@@ -26,15 +26,9 @@ def get_fresh_address(wallet_id: str):
     
     wallet = get_watch_wallet(wallet_id)
     key_num = wallet[4]
-<<<<<<< Updated upstream
     k = bip32.HDKey.from_base58(str(wallet[2]))
     child = k.derive([0, 2])
     address = script.p2wpkh(child).address()
-=======
-    k = bip32.HDKey.from_base58(wallet[2])
-    child = k.derive([0, 2])
-    pub_key = script.p2wpkh(child).address()
->>>>>>> Stashed changes
 
     update_watch_wallet(wallet_id = wallet_id, pub_key_no = key_num + 1)
 
