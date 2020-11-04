@@ -55,23 +55,20 @@ def create_watch_wallet(*, user: str, masterpub: str, title: str) -> Wallets:
             (wallet_id, user, masterpub, title, 0, 0),
         )
        # weallet_id = db.cursor.lastrowid
-    pubkey = get_fresh_address(wallet_id)
-    print(pubkey)
+    address = get_fresh_address(wallet_id)
     return get_watch_wallet(wallet_id)
 
 
-def get_watch_wallet(wallet_id: str) -> Optional[Wallets]:
+def get_watch_wallet(wallet_id: str) -> Wallets:
     with open_ext_db("watchonly") as db:
         row = db.fetchone("SELECT * FROM wallets WHERE id = ?", (wallet_id,))
     return Wallets.from_row(row) if row else None
 
 
 def get_watch_wallets(user: str) -> List[Wallets]:
-    print("poo")
     with open_ext_db("watchonly") as db:
-        rows = db.fetchall("SELECT * FROM wallets WHERE user IN ?", (user,))
-    return [Wallets.from_row(row) for row in rows]
-
+        rows = db.fetchall("SELECT * FROM wallets WHERE user = ?", (user,))
+    return [Wallets(**row) for row in rows]
 
 def update_watch_wallet(wallet_id: str, **kwargs) -> Optional[Wallets]:
     q = ", ".join([f"{field[0]} = ?" for field in kwargs.items()])

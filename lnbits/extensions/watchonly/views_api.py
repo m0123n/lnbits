@@ -26,8 +26,7 @@ async def api_wallets_retrieve():
 
     try:
         return (
-            jsonify(get_watch_wallets(g.wallet.user)),
-            HTTPStatus.OK,
+            jsonify([wallet._asdict() for wallet in get_watch_wallets(g.wallet.user)]), HTTPStatus.OK
         )
     except:
         return (
@@ -60,7 +59,7 @@ async def api_wallet_create_or_update(wallet_id=None):
     if not wallet_id:
         wallet = create_watch_wallet(user=g.wallet.user, masterpub=g.data["masterpub"], title=g.data["title"])
         print(wallet)
-        return jsonify(wallet), HTTPStatus.CREATED
+        return jsonify(wallet._asdict()), HTTPStatus.CREATED
 
     else:
         wallet = update_watch_wallet(wallet_id, g.data) 

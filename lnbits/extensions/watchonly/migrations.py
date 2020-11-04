@@ -17,6 +17,16 @@ def m001_initial(db):
 
     db.execute(
         """
+        CREATE TABLE IF NOT EXISTS addresses (
+            address TEXT NOT NULL PRIMARY KEY,
+            wallet TEXT NOT NULL,
+            amount INTEGER NOT NULL
+        );
+    """
+    )
+
+    db.execute(
+        """
         CREATE TABLE IF NOT EXISTS payments (
             id TEXT NOT NULL PRIMARY KEY,
             user TEXT,
