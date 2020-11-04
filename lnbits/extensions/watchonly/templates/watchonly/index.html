@@ -364,9 +364,7 @@
           .request(
             'PUT',
             '/watchonly/api/v1/wallet/' + data.id,
-            wallet.adminkey,
-            _.pick(data, 'description', 'amount')
-          )
+            wallet.inkey, data)
           .then(function (response) {
             self.walletLinks = _.reject(self.walletLinks, function (obj) {
               return obj.id === data.id
