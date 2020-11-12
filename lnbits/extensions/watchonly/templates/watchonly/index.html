@@ -9,8 +9,8 @@
           >New wallet</q-btn
         >
         <q-btn unelevated color="deep-purple" 
-          >
-        <div class="cursor-pointer" >
+          icon="edit">
+        <div class="cursor-pointer">
                    <q-tooltip>
            Point to another Mempool
          </q-tooltip>
@@ -51,7 +51,7 @@
             <q-icon name="search"></q-icon>
           </template>
         </q-input>
-{% endraw %}
+
           </div>
         </div>
         <q-table
@@ -63,8 +63,6 @@
           :pagination.sync="WalletsTable.pagination"
           :filter="filter"
         >
-
-          {% raw %}
           <template v-slot:header="props">
             <q-tr :props="props">
               <q-th auto-width></q-th>
@@ -90,7 +88,7 @@
                   size="xs"
                   icon="toll"
                   :color="($q.dark.isActive) ? 'grey-7' : 'grey-5'"
-                  @click="openQrCodeDialog(props.row.id)"
+                  @click="formDialogPayLink.show = true"
                 >
                   
          <q-tooltip>
@@ -140,6 +138,87 @@
 
             </q-tr>
           </template>
+        </q-table>
+      </q-card-section>
+    </q-card>
+
+
+
+    <q-card>
+      <q-card-section>
+        <div class="row items-center no-wrap q-mb-md">
+          <div class="col">
+            <h5 class="text-subtitle1 q-my-none">Paylinks</h5>
+          </div>
+          <div class="col-auto">
+        <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+          <template v-slot:append>
+            <q-icon name="search"></q-icon>
+          </template>
+        </q-input>
+{% endraw %}
+          </div>
+        </div>
+        <q-table
+          flat
+          dense
+          :data="payLinks"
+          row-key="id"
+          :columns="PaylinksTable.columns"
+          :pagination.sync="PaylinksTable.pagination"
+          :filter="filter"
+        >
+
+          {% raw %}
+          <template v-slot:header="props">
+            <q-tr :props="props">
+              <q-th auto-width></q-th>
+
+
+              
+              <q-th v-for="col in props.cols" :key="col.name" :props="props" auto-width>
+                <div v-if="col.name == 'id'"></div>
+                <div v-else>
+                {{ col.label }}
+              </div>
+              </q-th>
+              <q-th auto-width></q-th>
+            </q-tr>
+          </template>
+          <template v-slot:body="props">
+            <q-tr :props="props">
+
+               <q-td auto-width>
+                 <q-btn
+                  flat
+                  dense
+                  size="xs"
+                  @click="openUpdateDialog(props.row.id)"
+                  icon="edit"
+                  color="light-blue"
+                ></q-btn>
+                <q-btn
+                  flat
+                  dense
+                  size="xs"
+                  @click="deleteWalletLink(props.row.id)"
+                  icon="cancel"
+                  color="pink"
+                ></q-btn>
+
+
+             </q-td>
+              </q-td>
+              <q-td v-for="col in props.cols" :key="col.name" :props="props" auto-width>
+                <div v-if="col.name == 'id'"></div>
+                <div v-else>
+                {{ col.value }}
+              </div>
+              </q-td>
+
+
+            </q-tr>
+          </template>
           {% endraw %}
 
 
@@ -148,6 +227,10 @@
         </q-table>
       </q-card-section>
     </q-card>
+
+
+
+
   </div>
 
 
@@ -194,7 +277,7 @@
             unelevated
             color="deep-purple"
             type="submit"
-            >Update pay link</q-btn
+            >Update Watch-only Wallet</q-btn
           >
           <q-btn
             v-else
@@ -204,7 +287,7 @@
                 formDialog.data.masterpub == null ||
                 formDialog.data.title == null"
             type="submit"
-            >Create pay link</q-btn
+            >Create Watch-only Wallet</q-btn
           >
           <q-btn v-close-popup flat color="grey" class="q-ml-auto"
             >Cancel</q-btn
@@ -213,6 +296,62 @@
       </q-form>
     </q-card>
   </q-dialog>
+
+
+  <q-dialog v-model="formDialogPayLink.show" position="top" @hide="closeFormDialog">
+    <q-card class="q-pa-lg q-pt-xl lnbits__dialog-card">
+      <q-form @submit="sendFormData" class="q-gutter-md">
+
+        <q-input
+          filled
+          dense
+          v-model.trim="formDialogPayLink.data.title"
+          type="text"
+          label="Title"
+        ></q-input>
+
+        <q-input
+          filled
+          dense
+          v-model.trim="formDialogPayLink.data.amount"
+          type="number"
+          label="Amount (sats)"
+        ></q-input>      
+
+        <q-input
+          filled
+          dense
+          v-model.trim="formDialogPayLink.data.time"
+          type="number"
+          label="Time (mins)"
+        > </q-input>                  
+        
+        <div class="row q-mt-lg">
+          <q-btn
+            v-if="formDialogPayLink.data.id"
+            unelevated
+            color="deep-purple"
+            type="submit"
+            >Update Paylink</q-btn
+          >
+          <q-btn
+            v-else
+            unelevated
+            color="deep-purple"
+            :disable="
+                formDialogPayLink.data.time == null ||
+                formDialogPayLink.data.amount == null"
+            type="submit"
+            >Create Paylink</q-btn
+          >
+          <q-btn v-close-popup flat color="grey" class="q-ml-auto"
+            >Cancel</q-btn
+          >
+        </div>
+      </q-form>
+    </q-card>
+  </q-dialog>
+
 
   <q-dialog v-model="Addresses.show" position="top">
     <q-card v-if="Addresses.data" class="q-pa-lg lnbits__dialog-card">
@@ -257,6 +396,8 @@
       </div>
     </q-card>
   </q-dialog>
+
+
 </div>
 {% endblock %} {% block scripts %} {{ window_vars(user) }}
 <script src="{{ url_for('static', filename='vendor/vue-qrcode@1.0.2/vue-qrcode.min.js') }}"></script>
@@ -323,6 +464,32 @@
             rowsPerPage: 10
           }
         },
+        PaylinksTable: {
+          columns: [
+            {name: 'id', align: 'left', label: 'ID', field: 'id'},
+            {
+              name: 'title',
+              align: 'left',
+              label: 'Title',
+              field: 'title'
+            },
+            {
+              name: 'amount',
+              align: 'left',
+              label: 'Amount',
+              field: 'amount'
+            },
+            {
+              name: 'time',
+              align: 'left',
+              label: 'time',
+              field: 'time'
+            },
+          ],
+          pagination: {
+            rowsPerPage: 10
+          }
+        },
         AddressTable: {
           columns: [
             {
@@ -344,11 +511,11 @@
         },
         formDialog: {
           show: false,
-          secondMultiplier: 'seconds',
-          secondMultiplierOptions: ['seconds', 'minutes', 'hours'],
-          data: {
-            is_unique: false
-          }
+          data: {}
+        },
+        formDialogPayLink: {
+          show: false,
+          data: {}
         },
         qrCodeDialog: {
           show: false,
@@ -357,6 +524,7 @@
       }
     },
     methods: {
+
         getAddresses: function (walletID) {
         var self = this
 
@@ -367,9 +535,9 @@
             this.g.user.wallets[0].inkey
           )
           .then(function (response) {
+
           self.walletLinks = response.data.map(function (obj) {
               self.Addresses.data = response.data
-              console.log(self.Addresses.data)
             })
           })
           .catch(function (error) {

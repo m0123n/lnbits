@@ -20,7 +20,8 @@ from .crud import (
     update_mempool,
     get_mempool,
     get_addresses,
-    get_fresh_address
+    get_fresh_address,
+    get_address
 )
 
 ###################WALLETS#############################

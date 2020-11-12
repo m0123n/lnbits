@@ -9,7 +9,7 @@ def m001_initial(db):
             user TEXT,
             masterpub TEXT NOT NULL,
             title TEXT NOT NULL,
-            pub_key_no INTEGER NOT NULL DEFAULT 0,
+            address_no INTEGER NOT NULL DEFAULT 0,
             amount INTEGER NOT NULL
         );
     """
@@ -31,7 +31,7 @@ def m001_initial(db):
             id TEXT NOT NULL PRIMARY KEY,
             user TEXT,
             masterpub TEXT NOT NULL,
-            pubkey TEXT NOT NULL,
+            address TEXT NOT NULL,
             time_to_pay INTEGER NOT NULL,
             amount INTEGER NOT NULL,
             time TIMESTAMP NOT NULL DEFAULT (strftime('%s', 'now'))

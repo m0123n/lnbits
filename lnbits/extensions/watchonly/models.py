@@ -6,7 +6,7 @@ class Wallets(NamedTuple):
     user: str
     masterpub: str
     title: str
-    pub_key_no: int
+    address_no: int
     amount: int
     
     @classmethod
@@ -17,7 +17,7 @@ class Payments(NamedTuple):
     id: str
     user: str
     ex_key: str
-    pub_key: str
+    address: str
     time_to_pay: str
     amount: int
     time: int

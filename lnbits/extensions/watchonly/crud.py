@@ -22,15 +22,21 @@ from binascii import unhexlify, hexlify, a2b_base64, b2a_base64
 
 ########################ADDRESSES#######################
 
-def get_fresh_address(wallet_id: str) -> Addresses:
+def get_derive_address(wallet_id: str, num: int):
     
     wallet = get_watch_wallet(wallet_id)
-    key_num = wallet[4]
     k = bip32.HDKey.from_base58(str(wallet[2]))
-    child = k.derive([0, key_num])
+    child = k.derive([0, num])
     address = script.p2wpkh(child).address()
 
-    update_watch_wallet(wallet_id = wallet_id, pub_key_no = key_num + 1)
+    return address
+
+def get_fresh_address(wallet_id: str) -> Addresses:
+    wallet = get_watch_wallet(wallet_id)
+    
+    address = get_derive_address(wallet_id, wallet[4] + 1)
+
+    update_watch_wallet(wallet_id = wallet_id, address_no = wallet[4] + 1)
     with open_ext_db("watchonly") as db:
         db.execute(
             """
@@ -71,7 +77,7 @@ def create_watch_wallet(*, user: str, masterpub: str, title: str) -> Wallets:
                 user,
                 masterpub,
                 title,
-                pub_key_no,
+                address_no,
                 amount
             )
             VALUES (?, ?, ?, ?, ?, ?)
@@ -87,7 +93,6 @@ def get_watch_wallet(wallet_id: str) -> Wallets:
     with open_ext_db("watchonly") as db:
         row = db.fetchone("SELECT * FROM wallets WHERE id = ?", (wallet_id,))
     return Wallets.from_row(row) if row else None
-
 
 def get_watch_wallets(user: str) -> List[Wallets]:
     with open_ext_db("watchonly") as db:
@@ -112,7 +117,7 @@ def delete_watch_wallet(wallet_id: str) -> None:
 
 def create_payment(*, user: str, ex_key: str, description: str, amount: int) -> Payments:
 
-    pub_key = get_fresh_address(ex_key)
+    address = get_fresh_address(ex_key)
     payment_id = urlsafe_short_hash()
     with open_ext_db("watchonly") as db:
         db.execute(
@@ -121,12 +126,12 @@ def create_payment(*, user: str, ex_key: str, description: str, amount: int) -> 
                 payment_id,
                 user,
                 ex_key,
-                pub_key,
+                address,
                 amount
             )
             VALUES (?, ?, ?, ?, ?)
             """,
-            (payment_id, user, ex_key, pub_key, amount),
+            (payment_id, user, ex_key, address, amount),
         )
         payment_id = db.cursor.lastrowid
     return get_payment(payment_id)
