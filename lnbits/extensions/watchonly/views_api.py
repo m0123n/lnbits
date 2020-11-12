@@ -187,12 +187,7 @@ async def api_update_mempool():
 @watchonly_ext.route("/api/v1/mempool", methods=["GET"])
 @api_check_wallet_key("invoice")
 async def api_get_mempool():
-    print("poo")
-    print(g.wallet.user)
-    print("poo")
     mempool = get_mempool(g.wallet.user) 
-    print(mempool)
     if not mempool:
-        return jsonify({"message": "mempool does not exist"}), HTTPStatus.NOT_FOUND
-
+        mempool = create_mempool(user=g.wallet.user)
     return jsonify(mempool._asdict()), HTTPStatus.OK
