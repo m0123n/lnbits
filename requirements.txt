@@ -43,4 +43,3 @@ trio==0.17.0
 typing-extensions==3.7.4.3
 werkzeug==1.0.1
 wsproto==0.15.0
-embit==0.1.0

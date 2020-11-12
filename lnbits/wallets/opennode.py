@@ -30,7 +30,7 @@ class OpenNodeWallet(Wallet):
         except (httpx.ConnectError, httpx.RequestError):
             return StatusResponse(f"Unable to connect to '{self.endpoint}'", 0)
 
-        data = r.json()["message"]
+        data = r.json()["data"]
         if r.is_error:
             return StatusResponse(data["message"], 0)
 
@@ -81,7 +81,6 @@ class OpenNodeWallet(Wallet):
 
     def get_invoice_status(self, checking_id: str) -> PaymentStatus:
         r = httpx.get(f"{self.endpoint}/v1/charge/{checking_id}", headers=self.auth)
-
         if r.is_error:
             return PaymentStatus(None)
 
@@ -103,17 +102,13 @@ class OpenNodeWallet(Wallet):
             yield value
 
     async def webhook_listener(self):
-        text: str = await request.get_data()
-        data = json.loads(text)
-        if type(data) is not dict or "event" not in data or data["event"].get("name") != "wallet_receive":
+        data = await request.form
+        if "status" not in data or data["status"] != "paid":
             return "", HTTPStatus.NO_CONTENT
 
         charge_id = data["id"]
-        if data["status"] != "paid":
-            return "", HTTPStatus.NO_CONTENT
-
-        x = hmac.new(self.auth["Authorization"], digestmod="sha256")
-        x.update(charge_id)
+        x = hmac.new(self.auth["Authorization"].encode("ascii"), digestmod="sha256")
+        x.update(charge_id.encode("ascii"))
         if x.hexdigest() != data["hashed_order"]:
             print("invalid webhook, not from opennode")
             return "", HTTPStatus.NO_CONTENT

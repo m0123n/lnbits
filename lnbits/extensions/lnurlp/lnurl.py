@@ -44,6 +44,9 @@ async def api_lnurl_callback(link_id):
         # allow some fluctuation (as the fiat price may have changed between the calls)
         min = rate * 995 * link.min
         max = rate * 1010 * link.max
+    else:
+        min = link.min * 1000
+        max = link.max * 1000
 
     amount_received = int(request.args.get("amount"))
     if amount_received < min:
@@ -76,10 +79,6 @@ async def api_lnurl_callback(link_id):
         extra={"tag": "lnurlp", "link": link.id, "comment": comment},
     )
 
-    resp = LnurlPayActionResponse(
-        pr=payment_request,
-        success_action=link.success_action(payment_hash),
-        routes=[],
-    )
+    resp = LnurlPayActionResponse(pr=payment_request, success_action=link.success_action(payment_hash), routes=[],)
 
     return jsonify(resp.dict()), HTTPStatus.OK
